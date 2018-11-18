@@ -1,0 +1,6 @@
+__pycache__
+.vagrant
+*.pyc
+*.json
+*.sh
+*.db
