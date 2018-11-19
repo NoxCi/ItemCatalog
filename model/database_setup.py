@@ -9,16 +9,17 @@ class User(Base):
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
-    email = Column(String(250), nullable=False)
-    picture = Column(String(250))
+    name = Column(String(256), nullable=False)
+    email = Column(String(256), nullable=False)
+    picture = Column(String(256))
 
     @property
     def serialize(self):
         return {
             'id': self.id,
             'name': self.name,
-            'email': self.email
+            'email': self.email,
+            'picture':self.picture
         }
 
 class Category(Base):
@@ -57,7 +58,7 @@ class Item(Base):
             'description': self.description
         }
 
-engine = create_engine('sqlite:///restaurants.db')
+engine = create_engine('sqlite:///model/catalog.db')
 
 
 Base.metadata.create_all(engine)
