@@ -43,6 +43,30 @@ h3 {
  	color: #0093B9;
  	line-height: 17px;
  }
+nav {
+	float: left;
+	width: 20%;
+	padding: 20px;
+	margin-right: 20px;
+}
+article {
+    float: left;
+    padding: 20px;
+    width: 70%;
+    background-color: #f1f1f1;
+}
+.signinButton{
+ display: inline-block;
+ vertical-align: middle;
+}
+.cancelLogin{
+ display: inline-block;
+ vertical-align: middle;
+}
+.marco{
+	line-height: 500px;
+	text-align: center;
+}
 .padding-top {
 	padding-top: 30px;
 }
@@ -58,12 +82,12 @@ h3 {
 .btn {
 	padding: 20px;
 	margin: 0;
-	border-color: #9FB80A;
+	border-color: #0099cc;
 	border-width: 2px;
-	color: #9FB80A;;
+	color: #0099cc;
 }
 .btn:hover {
-	border-color: #9FB80A;
+	border-color: #0099cc;
 }
 .btn.delete {
 	border-color: #aaaaaa;
@@ -97,23 +121,20 @@ h3 {
 .divider.blue {
 	background-color: #42C3C9;
 }
-.divider.green {
-	background-color: #9FB80A;
-}
 .banner.main {
 	height: 150px;
-	background: url("/static/top-banner.jpg");
+	background-color: #ccffff;
 	background-position: right;
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 .banner.category {
 	height: 150px;
-	background-color: #E1E17F;
+	background-color: #ccffff;
 }
 .banner.profile {
 	height: 150px;
-	background-color: #A6E8EB;
+	background-color: #ccffff;
 }
 .banner h1 {
 	margin: 45px 0;
@@ -123,7 +144,7 @@ h3 {
  	padding: 20px;
 }
 .category-list:hover {
- 	background-color: #e1e17f;
+ 	background-color: #00ccff;
  	padding: 20px;
 }
 .item-list {
@@ -131,7 +152,7 @@ h3 {
  	padding: 20px;
 }
 .item-list:hover {
- 	background-color: #e1e17f;
+ 	background-color: #00ccff;
  	padding: 20px;
 }
 .description {

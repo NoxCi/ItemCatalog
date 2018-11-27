@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect,jsonify, url_for, flash
 app = Flask(__name__)
 
-from sqlalchemy import create_engine, asc
+from sqlalchemy import create_engine, asc, desc
 from sqlalchemy.orm import sessionmaker
 from model.database_setup import Base, User, Category, Item
 
@@ -27,9 +27,10 @@ session = DBSession()
 @app.route('/catalog')
 def showCatalog():
     categories = session.query(Category).order_by(asc(Category.name))
+    recentItems = session.query(Item).order_by(desc(Item.id)).limit(10)
     if 'username' not in login_session:
-        return render_template('publicIndex.html',categories = categories)
-    return render_template('index.html', categories = categories)
+        return render_template('publicIndex.html',categories = categories, recentItems = recentItems)
+    return render_template('index.html', categories = categories, recentItems = recentItems)
 
 @app.route('/login')
 def showLogin():
