@@ -318,6 +318,24 @@ def deleteItem(category_id,item_id):
     else:
         return render_template('deleteItem.html',category = category, item=itemToDelete)
 
+########
+# JSON #
+########
+@app.route('/catalog/JSON')
+def catalogJSON():
+    categories = session.query(Category).all()
+    return jsonify(categories=[c.serialize for c in categories])
+
+@app.route('/catalog/<int:category_id>/category/JSON')
+def categoryJSON(category_id):
+    items = session.query(Item).filter_by(category_id=category_id).all()
+    return jsonify(items=[i.serialize for i in items])
+
+@app.route('/catalog/<int:category_id>/category/<int:item_id>/item/JSON')
+def itemJSON(category_id,item_id):
+    item = session.query(Item).filter_by(id=item_id).one()
+    return jsonify(item=item.serialize)
+
 if __name__ == '__main__':
   app.secret_key = 'super_secret_key'
   app.debug = True
