@@ -36,7 +36,6 @@ def showCatalog():
     categories = session.query(Category).order_by(asc(Category.name))
     recentItems = session.query(Item).order_by(desc(Item.id)).limit(10)
     if 'username' not in login_session:
-        params = []
         return render_template('publicIndex.html', categories=categories, recentItems=recentItems)
     return render_template('index.html', categories=categories, recentItems=recentItems)
 
