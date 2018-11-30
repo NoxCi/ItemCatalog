@@ -2,8 +2,8 @@
 This is my second proyect of the course, an Item Catalog made with python 2.7.1
 
 ## Setup
-In order to work with this project you need to install Virtual Machine(VM),
-Vagrant and get newsdata.sql to populate the database news
+In order to work with this project you need to install Virtual Machine(VM) and
+Vagrant.
 
 To setup the VM and Vagrant, execute the next
 ```

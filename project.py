@@ -33,15 +33,21 @@ session = DBSession()
 @app.route('/')
 @app.route('/catalog')
 def showCatalog():
-    categories = session.query(Category).order_by(asc(Category.name))
+    """Show index page"""
+
+    ctgs = session.query(Category).order_by(asc(Category.name))
     recentItems = session.query(Item).order_by(desc(Item.id)).limit(10)
     if 'username' not in login_session:
-        return render_template('publicIndex.html', categories=categories, recentItems=recentItems)
-    return render_template('index.html', categories=categories, recentItems=recentItems)
+        html = 'publicIndex.html'
+        return render_template(html, categories=ctgs, recentItems=recentItems)
+    html = 'index.html'
+    return render_template(html, categories=ctgs, recentItems=recentItems)
 
 
 @app.route('/login')
 def showLogin():
+    """Show login page"""
+
     characters = string.ascii_uppercase + string.digits
     state = ''.join(random.choice(characters) for x in xrange(32))
     login_session['state'] = state
@@ -49,6 +55,8 @@ def showLogin():
 
 
 def createUser(login_session):
+    """Create a new User and add it to the data base"""
+
     name = login_session['username']
     email = login_session['email']
     picture = login_session['picture']
@@ -60,20 +68,25 @@ def createUser(login_session):
 
 
 def getUserInfo(user_id):
+    """Return User given user id"""
+
     user = session.query(User).filter_by(id=user_id).one()
     return user
 
 
 def getUserID(email):
+    """Return user id given email only if theres a user with that email"""
+
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
-    except:
+    except:  # noqa
         return None
 
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    """Lets users log in with a google acount"""
     print "......"
     # Validate state token
     if request.args.get('state') != login_session['state']:
@@ -157,7 +170,7 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     print "Done"
     return output
@@ -165,6 +178,8 @@ def gconnect():
 
 @app.route('/gdisconnect')
 def gdisconnect():
+    """Log out the user that has log in with a google acount"""
+
     access_token = login_session.get('access_token')
     if access_token is None:
         print 'Access Token is None'
@@ -172,7 +187,8 @@ def gdisconnect():
     print 'In gdisconnect access token is %s', access_token
     print 'User name is: '
     print login_session['username']
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    u = 'https://accounts.google.com/o/oauth2/revoke?token=%s'
+    url = u % login_session['access_token']
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print 'result is '
@@ -190,20 +206,10 @@ def gdisconnect():
 ###################
 
 
-@app.route('/catalog/<int:category_id>/category')
-def showCategory(category_id):
-    category = session.query(Category).filter_by(id=category_id).one()
-    items = session.query(Item).filter_by(category_id=category_id).all()
-    author = session.query(User).filter_by(id=category.user_id).one()
-
-    if 'username' not in login_session:
-        return render_template('publicCategory.html', items=items, category=category, author=author)
-    else:
-        return render_template('category.html', items=items, category=category, author=author)
-
-
 @app.route('/catalog/new', methods=['GET', 'POST'])
 def newCategory():
+    """Create a category"""
+
     if 'username' not in login_session:
         return redirect('/login')
 
@@ -219,12 +225,32 @@ def newCategory():
         return render_template('newCategory.html')
 
 
+@app.route('/catalog/<int:category_id>/category')
+def showCategory(category_id):
+    """Read a category"""
+
+    ctgs = session.query(Category).filter_by(id=category_id).one()
+    items = session.query(Item).filter_by(category_id=category_id).all()
+    auth = session.query(User).filter_by(id=ctgs.user_id).one()
+
+    if 'username' not in login_session:
+        html = 'publicCategory.html'
+        return render_template(html, items=items, category=ctgs, author=auth)
+    else:
+        html = 'category.html'
+        return render_template(html, items=items, category=ctgs, author=auth)
+
+
 @app.route('/catalog/<int:category_id>/edit', methods=['GET', 'POST'])
 def editCategory(category_id):
+    """Update a category"""
+
     categoryToEdit = session.query(Category).filter_by(id=category_id).one()
     author = session.query(User).filter_by(id=categoryToEdit.user_id).one()
 
-    if 'username' not in login_session or author.id != login_session['user_id']:
+    key = 'user_id'
+    if 'username' not in login_session or author.id != login_session[key]:
+        flash('You are not authorize to edit %s' % categoryToEdit.name)
         return redirect('/login')
 
     if request.method == 'POST':
@@ -238,11 +264,15 @@ def editCategory(category_id):
 
 @app.route('/catalog/<int:category_id>/delete', methods=['GET', 'POST'])
 def deleteCategory(category_id):
+    """Delete a category"""
+
     categoryToDelete = session.query(Category).filter_by(id=category_id).one()
     items = session.query(Item).filter_by(category_id=category_id).all()
     author = session.query(User).filter_by(id=categoryToDelete.user_id).one()
 
-    if 'username' not in login_session or author.id != login_session['user_id']:
+    key = 'user_id'
+    if 'username' not in login_session or author.id != login_session[key]:
+        flash('You are not authorize to edit %s' % categoryToDelete.name)
         return redirect('/login')
 
     if request.method == 'POST':
@@ -253,26 +283,18 @@ def deleteCategory(category_id):
         flash('%s category succesfuly deleted' % categoryToDelete.name)
         return redirect(url_for('showCatalog'))
     else:
-        return render_template('deleteCategory.html', category=categoryToDelete)
+        html = 'deleteCategory.html'
+        return render_template(html, category=categoryToDelete)
 
 ##############
 # CRUD Items #
 ##############
 
 
-@app.route('/catalog/<int:category_id>/category/<int:item_id>/item')
-def showItem(category_id, item_id):
-    category = session.query(Category).filter_by(id=category_id).one()
-    item = session.query(Item).filter_by(id=item_id).one()
-    author = session.query(User).filter_by(id=category.user_id).one()
-
-    if 'username' not in login_session or author.id != login_session['user_id']:
-        return render_template('publicItem.html', item=item, category=category, author=author)
-    return render_template('item.html', item=item, category=category, author=author)
-
-
 @app.route('/catalog/<int:category_id>/category/new', methods=['GET', 'POST'])
 def newItem(category_id):
+    """Create an item"""
+
     if 'username' not in login_session:
         return redirect('/login')
 
@@ -291,13 +313,33 @@ def newItem(category_id):
         return render_template('newItem.html', category_id=category_id)
 
 
-@app.route('/catalog/<int:category_id>/category/<int:item_id>/edit', methods=['GET', 'POST'])
+@app.route('/catalog/<int:category_id>/category/<int:item_id>/item')
+def showItem(category_id, item_id):
+    """Read an item"""
+
+    ctgs = session.query(Category).filter_by(id=category_id).one()
+    item = session.query(Item).filter_by(id=item_id).one()
+    author = session.query(User).filter_by(id=ctgs.user_id).one()
+
+    key = 'user_id'
+    if 'username' not in login_session or author.id != login_session[key]:
+        html = 'publicItem.html'
+        return render_template(html, item=item, category=ctgs, author=author)
+    html = 'item.html'
+    return render_template(html, item=item, category=ctgs, author=author)
+
+
+@app.route('/catalog/<int:category_id>/category/<int:item_id>/edit', methods=['GET', 'POST'])  # noqa
 def editItem(category_id, item_id):
+    """Update an item"""
+
     itemToEdit = session.query(Item).filter_by(id=item_id).one()
     category = session.query(Category).filter_by(id=category_id).one()
     author = session.query(User).filter_by(id=itemToEdit.user_id).one()
 
-    if 'username' not in login_session or author.id != login_session['user_id']:
+    key = 'user_id'
+    if 'username' not in login_session or author.id != login_session[key]:
+        flash('You are not authorize to edit %s' % itemToEdit.name)
         return redirect('/login')
 
     if request.method == 'POST':
@@ -312,16 +354,21 @@ def editItem(category_id, item_id):
 
         return redirect(url_for('showCategory', category_id=category_id))
     else:
-        return render_template('editItem.html', category=category, item=itemToEdit)
+        html = 'editItem.html'
+        return render_template(html, category=category, item=itemToEdit)
 
 
-@app.route('/catalog/<int:category_id>/category/<int:item_id>/delete', methods=['GET', 'POST'])
+@app.route('/catalog/<int:category_id>/category/<int:item_id>/delete', methods=['GET', 'POST'])  # noqa
 def deleteItem(category_id, item_id):
+    """Delete an item"""
+
     category = session.query(Category).filter_by(id=category_id).one()
     itemToDelete = session.query(Item).filter_by(id=item_id).one()
     author = session.query(User).filter_by(id=itemToDelete.user_id).one()
 
-    if 'username' not in login_session or author.id != login_session['user_id']:
+    key = 'user_id'
+    if 'username' not in login_session or author.id != login_session[key]:
+        flash('You are not authorize to delete %s' % itemToDelete.name)
         return redirect('/login')
 
     if request.method == 'POST':
@@ -331,7 +378,8 @@ def deleteItem(category_id, item_id):
 
         return redirect(url_for('showCategory', category_id=category_id))
     else:
-        return render_template('deleteItem.html', category=category, item=itemToDelete)
+        html = 'deleteItem.html'
+        return render_template(html, category=category, item=itemToDelete)
 
 ########
 # JSON #
